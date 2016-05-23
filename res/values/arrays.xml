@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="FlowViews">
+        <item >AsyncTask</item>
+        <item >Android</item>
+        <item >github</item>
+        <item >Peerless2012</item>
+        <item >Gmail</item>
+        <item >Google Now</item>
+        <item >Google Home</item>
+        <item >Ali</item>
+        <item >Duo</item>
+        <item >Google Photos</item>
+        <item >YouToBe</item>
+        <item >Google Map</item>
+    </string-array>
+</resources>
