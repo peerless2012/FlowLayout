@@ -1,23 +1,25 @@
 package com.peerless2012.flowlayout;
 
 import java.util.ArrayList;
-
+import java.util.concurrent.atomic.AtomicInteger;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
+import android.os.Build;
 import android.support.v4.util.LongSparseArray;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.view.ViewGroupCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.View;
 import android.view.ViewDebug;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.ListAdapter;
-import android.widget.TextView;
 
 /**
 * @Author peerless2012
@@ -109,18 +111,11 @@ public class FlowLayout extends ViewGroup {
 		if (mListAdapter == null || mListAdapter.getCount() == 0) {
 			super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 		}else {
-			int count = mListAdapter.getCount();
+			int childCount = getChildCount();
 			View child = null;
 			int height = 0,width = 0;
-			for (int i = 0; i < count; i++) {
-				if (isDirty) {						
-					child = mListAdapter.getView(i, null, this);
-					child.setId((int)mListAdapter.getItemId(i));
-					mChilds.add(child);
-					addView(child);
-				}else {
-					child = mChilds.get(i);
-				}
+			for (int i = 0; i < childCount; i++) {
+				child = getChildAt(i);
 				child.measure(MeasureSpec.makeMeasureSpec(viewWidth, MeasureSpec.AT_MOST)
 						, MeasureSpec.makeMeasureSpec(viewHeight, MeasureSpec.AT_MOST));
 				LayoutParams layoutParams = (LayoutParams) child.getLayoutParams();
@@ -145,22 +140,15 @@ public class FlowLayout extends ViewGroup {
 		if (mChilds == null) {
 			return;
 		}
+		int childCount = getChildCount();
 		View child;
 		LayoutParams layoutParams;
-		for (int i = 0; i < mChilds.size(); i++) {
-			child = mChilds.get(i);
+		for (int i = 0; i < childCount; i++) {
+			child = getChildAt(i);
 			layoutParams = (LayoutParams) child.getLayoutParams();
 			Log.i("FlowLayout", "onLayout : left = " + layoutParams.left +",   top = " + layoutParams.top +" ,   right = " + layoutParams.right+" ,   bottom = " + layoutParams.bottom);
 			child.layout(layoutParams.left, t + layoutParams.top, layoutParams.right, t + layoutParams.bottom);
-//			child.layout(200, 200, 300, 300);
 		}
-		invalidate();
-		TextView textView = new TextView(getContext());
-		LayoutParams generateDefaultLayoutParams = (LayoutParams) generateDefaultLayoutParams();
-		textView.setLayoutParams(generateDefaultLayoutParams);
-		textView.setText("3333333333333");
-		addView(textView);
-		textView.layout(200, 200, 300, 300);
 	}
 
 	Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -172,13 +160,33 @@ public class FlowLayout extends ViewGroup {
 	@Override
 	public void draw(Canvas canvas) {
 		super.draw(canvas);
-		mPaint .setColor(Color.RED);
-		mPaint.setStyle(Style.FILL);
-		mPaint.setStrokeWidth(20);
-		canvas.drawCircle(200, 200, 100, mPaint);
+//		mPaint .setColor(Color.RED);
+//		mPaint.setStyle(Style.FILL);
+//		mPaint.setStrokeWidth(20);
+//		canvas.drawCircle(200, 200, 100, mPaint);
 	}
 	
 	/*-----------------------------------------自定义方法区---------------------------------------------*/
+	private void generateViews() {
+		mChilds.clear();
+		if (mListAdapter != null) {
+			removeAllViewsInLayout();
+			int count = mListAdapter.getCount();
+			View child = null;
+			for (int i = 0; i < count; i++) {
+				// 后面牵涉到复用的话第二个参数就不能总是传空了
+				child = mListAdapter.getView(i, null, this);
+				child.setId(generateViewIdComp());
+				mChilds.add(child);
+				addView(child);
+				requestLayout();
+//				invalidate();
+			}
+		}else {
+			removeAllViews();
+		}
+	}
+	
 	
 	private void init(Context context, AttributeSet attrs) {
 		mListDataSetObserver = new ListDataSetObserver();
@@ -204,6 +212,7 @@ public class FlowLayout extends ViewGroup {
         if (mCheckedIdStates != null) {
             mCheckedIdStates.clear();
         }
+        generateViews();
 	}
 	
 	
@@ -213,14 +222,44 @@ public class FlowLayout extends ViewGroup {
 		public void onChanged() {
 			super.onChanged();
 			//刷新界面
+			generateViews();
 		}
 
 		@Override
 		public void onInvalidated() {
 			super.onInvalidated();
+			generateViews();
 		}
 		
 	}
+	
+	/**
+     * An {@code int} value that may be updated atomically.
+     */
+    private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
+
+    /**
+     * 动态生成View ID
+     * API LEVEL 17 以上View.generateViewId()生成
+     * API LEVEL 17 以下需要手动生成
+     */
+    @SuppressLint("NewApi")
+	public static int generateViewIdComp() {
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            for (; ; ) {
+                final int result = sNextGeneratedId.get();
+                // aapt-generated IDs have the high byte nonzero; clamp to the range under that.
+                int newValue = result + 1;
+                if (newValue > 0x00FFFFFF) newValue = 1; // Roll over to 1, not 0.
+                if (sNextGeneratedId.compareAndSet(result, newValue)) {
+                    return result;
+                }
+            }
+        } else {
+            return View.generateViewId();
+        }
+    }
 	
 	/*-----------------------------------------声明区---------------------------------------------*/
 	

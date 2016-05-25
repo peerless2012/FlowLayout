@@ -1,5 +1,6 @@
 package com.peerless2012.flowlayout;
 
+import java.util.Arrays;
 import java.util.Random;
 
 import android.graphics.Color;
@@ -22,6 +23,22 @@ public class FlowViewsAdapter extends BaseAdapter {
 		mKeyWords = keyWords;
 	}
 
+	public void addAll(String[] newDatas) {
+		int newSize = newDatas == null ? 0: newDatas.length;
+		if (newSize == 0) return;
+		int preSize = mKeyWords == null ? 0: mKeyWords.length;
+		if (preSize == 0) {
+			mKeyWords = newDatas;
+			notifyDataSetChanged();
+			return;
+		}
+		String[] preDatas = mKeyWords;
+		mKeyWords = new String[newSize + preSize];
+		System.arraycopy(preDatas, 0, mKeyWords, 0, preDatas.length);
+		System.arraycopy(newDatas, 0, mKeyWords, preDatas.length, newDatas.length);
+		notifyDataSetChanged();
+	}
+	
 	@Override
 	public int getCount() {
 		return mKeyWords == null ? 0 : mKeyWords.length;
