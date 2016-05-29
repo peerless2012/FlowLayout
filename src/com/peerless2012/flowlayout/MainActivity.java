@@ -2,12 +2,10 @@ package com.peerless2012.flowlayout;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Random;
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.ListView;
 
 public class MainActivity extends Activity implements OnClickListener{
 
@@ -39,7 +37,7 @@ public class MainActivity extends Activity implements OnClickListener{
 	 /**
      * 获取指定长度随机简体中文
      * @param len int
-     * @return String
+     * @return String 
      */
     public static String getRandomJianHan(int len)
     {

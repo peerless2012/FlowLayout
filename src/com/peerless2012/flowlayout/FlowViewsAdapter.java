@@ -1,8 +1,6 @@
 package com.peerless2012.flowlayout;
 
-import java.util.Arrays;
 import java.util.Random;
-
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;

@@ -107,7 +107,13 @@ public class FlowLayout extends ViewGroup {
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		int gLeft = 0,gTop = 0;
 		int viewWidth =MeasureSpec.getSize(widthMeasureSpec);
+		int viewWidthMode = MeasureSpec.getMode(widthMeasureSpec);
 		int viewHeight = MeasureSpec.getSize(heightMeasureSpec);
+		int viewHeightMode = MeasureSpec.getMode(heightMeasureSpec);
+		// UNSPECIFIED = 0,EXACTLY = 1073741824,AT_MOST = -2147483648 
+		Log.i("FlowLayout onMeasure", "width = "+ viewWidth+",  widthMode = "+viewWidthMode
+				+ ", viewHeight = "+ viewHeight +", heightMode = "+ viewHeightMode);
+		
 		if (mListAdapter == null || mListAdapter.getCount() == 0) {
 			super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 		}else {
@@ -116,8 +122,9 @@ public class FlowLayout extends ViewGroup {
 			int height = 0,width = 0;
 			for (int i = 0; i < childCount; i++) {
 				child = getChildAt(i);
-				child.measure(MeasureSpec.makeMeasureSpec(viewWidth, MeasureSpec.AT_MOST)
-						, MeasureSpec.makeMeasureSpec(viewHeight, MeasureSpec.AT_MOST));
+				measureChild(child, widthMeasureSpec, heightMeasureSpec);
+//				child.measure(MeasureSpec.makeMeasureSpec(viewWidth, MeasureSpec.AT_MOST)
+//						, MeasureSpec.makeMeasureSpec(Integer.MAX_VALUE, MeasureSpec.AT_MOST));
 				LayoutParams layoutParams = (LayoutParams) child.getLayoutParams();
 				width = child.getMeasuredWidth();
 				height = child.getMeasuredHeight();
@@ -132,7 +139,8 @@ public class FlowLayout extends ViewGroup {
 			}
 			isDirty = false;
 		}
-		setMeasuredDimension(viewWidth, 1000);
+		setMeasuredDimension(viewWidth, gTop+100);
+//		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 	}
 	
 	@Override
